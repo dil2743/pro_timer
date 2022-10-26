@@ -1,0 +1,6 @@
+*.out
+main
+build
+main.dSYM
+pro_timer
+.DS_Store
