@@ -16,6 +16,12 @@ static void do_beep( void );
 /// @brief : public function for initialization 
 /// @param mobj : protimer object 
 
+#define IDLE        &protimer_state_handler_IDLE
+#define TIME_SET    &protimer_state_handler_TIME_SET
+#define COUNTDOWN   &protimer_state_handler_COUNTDOWN
+#define PAUSE       &protimer_state_handler_PAUSE
+#define STAT        &protimer_state_handler_STAT
+
 void protimer_init(protimer_t *mobj)
 {
     event_t ee;
@@ -23,37 +29,8 @@ void protimer_init(protimer_t *mobj)
     mobj->active_state = IDLE;
     mobj->curr_time = 0;
     mobj->elpsed_time = 0;
-    protimer_state_mechine(mobj, &ee);
+    (*mobj->active_state)(mobj,&ee);
     printf("protimer inti done \n");
-}
-
-event_status_t protimer_state_mechine(protimer_t * const mobj, event_t const * const e)
-{
-    switch (mobj->active_state)
-    {
-        case IDLE:
-            return protimer_state_handler_IDLE(mobj, e);
-            break;
-        
-        case TIME_SET:
-            return protimer_state_handler_TIME_SET(mobj, e);
-            break;
-        
-        case COUNTDOWN:
-            return protimer_state_handler_COUNTDOWN(mobj, e);
-            break;
-        
-        case PAUSE:
-            return protimer_state_handler_PAUSE(mobj, e);
-            break;
-        
-        case STAT:
-            return protimer_state_handler_STAT(mobj, e);
-            break;
-        
-        default:
-            break;
-    }
 }
 
 static event_status_t protimer_state_handler_IDLE(protimer_t *const mobj, event_t const *const e)

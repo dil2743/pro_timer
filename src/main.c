@@ -30,7 +30,7 @@ static void protimer_event_dispatcher( protimer_t * const mobj, event_t const * 
     protimer_state_t source_state, target_state;
 
     source_state = mobj->active_state;
-    status = protimer_state_mechine(mobj, e);
+    status = (*mobj->active_state)(mobj, e);
 
     if(EVENT_TRANSITION == status)
     {
@@ -39,12 +39,10 @@ static void protimer_event_dispatcher( protimer_t * const mobj, event_t const * 
         /* Run the entry action fot the target */
         ee.sig = EXIT;
         target_state = mobj->active_state;
-        mobj->active_state = source_state;
-        protimer_state_mechine(mobj, &ee);
+        (void)(*source_state)(mobj, &ee);
 
         ee.sig = ENTRY;
-        mobj->active_state = target_state;
-        protimer_state_mechine(mobj, &ee);
+        (void)(*target_state)(mobj, &ee);
     }
 }
 

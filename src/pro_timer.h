@@ -19,24 +19,13 @@ typedef enum
     INVALID,
 }protimer_signal_t;
 
-/* Various states of the application */
+
 typedef enum
 {
-    IDLE,
-    TIME_SET,
-    COUNTDOWN,
-    PAUSE,
-    STAT,
-}protimer_state_t;
-
-/* Main application structure*/
-typedef struct 
-{
-    uint32_t curr_time;
-    uint32_t elpsed_time;
-    uint32_t pro_time;
-    protimer_state_t active_state;
-}protimer_t;
+    EVENT_HANDLED,
+    EVENT_IGNORED,
+    EVENT_TRANSITION,
+}event_status_t;
 
 /* Generic super strucre */
 typedef struct
@@ -57,12 +46,18 @@ typedef struct
     uint32_t ss;
 }protimer_tick_event_t;
 
-typedef enum
+struct protimer_tag;
+
+typedef event_status_t (*protimer_state_t)(struct protimer_tag *const, event_t const *const );
+
+/* Main application structure*/
+typedef struct protimer_tag
 {
-    EVENT_HANDLED,
-    EVENT_IGNORED,
-    EVENT_TRANSITION,
-}event_status_t;
+    uint32_t curr_time;
+    uint32_t elpsed_time;
+    uint32_t pro_time;
+    protimer_state_t active_state;
+}protimer_t;
 
 void protimer_init(protimer_t *mobj);
 event_status_t protimer_state_mechine(protimer_t * const mobj, event_t const * const e);
