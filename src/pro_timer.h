@@ -17,6 +17,7 @@ typedef enum
     ENTRY,
     EXIT,
     INVALID,
+    MAX_SIGNALS,
 }protimer_signal_t;
 
 /* Various states of the application */
@@ -27,19 +28,27 @@ typedef enum
     COUNTDOWN,
     PAUSE,
     STAT,
+    MAX_STATE,
 }protimer_state_t;
 
+struct protimer_tag;
+struct event_tag;
+enum event_status_tag;
+
+typedef enum event_status_tag (*e_handler_t)(struct protimer_tag * const, struct event_tag const *const);
+
 /* Main application structure*/
-typedef struct 
+typedef struct protimer_tag
 {
     uint32_t curr_time;
     uint32_t elpsed_time;
     uint32_t pro_time;
     protimer_state_t active_state;
+    uintptr_t *state_table;
 }protimer_t;
 
 /* Generic super strucre */
-typedef struct
+typedef struct event_tag
 {
     uint8_t sig;
 }event_t;
@@ -57,7 +66,7 @@ typedef struct
     uint32_t ss;
 }protimer_tick_event_t;
 
-typedef enum
+typedef enum event_status_tag
 {
     EVENT_HANDLED,
     EVENT_IGNORED,
@@ -69,7 +78,7 @@ event_status_t protimer_state_mechine(protimer_t * const mobj, event_t const * c
 
 
  // function definations 
-git event_status_t IDEL_entry(protimer_t *const mobj, event_t const *const e);
+event_status_t IDEL_entry(protimer_t *const mobj, event_t const *const e);
 event_status_t IDEL_incTime(protimer_t *const mobj, event_t const *const e);
 event_status_t IDEL_timeTick(protimer_t *const mobj, event_t const *const e);
 event_status_t IDEL_exit(protimer_t *const mobj, event_t const *const e);
@@ -81,6 +90,7 @@ event_status_t TIME_SET_decTime(protimer_t *const mobj, event_t const *const e);
 event_status_t TIME_SET_exit(protimer_t *const mobj, event_t const *const e);
 event_status_t TIME_SET_startStop(protimer_t *const mobj, event_t const *const e);
 event_status_t TIME_SET_abort(protimer_t *const mobj, event_t const *const e);
+
 event_status_t COUNTDOWN_timeTick(protimer_t *const mobj, event_t const *const e);
 event_status_t COUNTDOWN_exit(protimer_t *const mobj, event_t const *const e);
 event_status_t COUNTDOWN_startStop(protimer_t *const mobj, event_t const *const e);

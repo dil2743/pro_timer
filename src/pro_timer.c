@@ -18,13 +18,22 @@ static void do_beep( void );
 
 void protimer_init(protimer_t *mobj)
 {
+    e_handler_t eHandler;
     event_t ee;
     ee.sig = ENTRY;
     mobj->active_state = IDLE;
     mobj->curr_time = 0;
     mobj->elpsed_time = 0;
-    protimer_state_mechine(mobj, &ee);
-    printf("protimer inti done \n");
+    eHandler = (e_handler_t) mobj->state_table[IDLE * MAX_SIGNALS + ENTRY];
+    if( NULL != eHandler)
+    {
+        (*eHandler)(mobj,&ee);
+        printf("protimer inti done \n");
+    }
+    else
+    {
+        printf("protimer inti FAILED \n");
+    }
 }
 
 event_status_t IDEL_entry(protimer_t *const mobj, event_t const *const e)
