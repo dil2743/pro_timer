@@ -111,7 +111,6 @@ void protimer_stateTable_init(protimer_t * const mobj)
         [ABORT] = {NULL, NULL, &STAT_timeTick,
                   NULL, NULL, &STAT_entry, &STAT_exit },
     };
-
+    
     mobj->state_table = (uintptr_t*) &protimer_state_table[0][0];
-
 }
