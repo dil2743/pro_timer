@@ -66,4 +66,36 @@ typedef enum
 
 void protimer_init(protimer_t *mobj);
 event_status_t protimer_state_mechine(protimer_t * const mobj, event_t const * const e);
+
+
+ // function definations 
+git event_status_t IDEL_entry(protimer_t *const mobj, event_t const *const e);
+event_status_t IDEL_incTime(protimer_t *const mobj, event_t const *const e);
+event_status_t IDEL_timeTick(protimer_t *const mobj, event_t const *const e);
+event_status_t IDEL_exit(protimer_t *const mobj, event_t const *const e);
+event_status_t IDEL_startStop(protimer_t *const mobj, event_t const *const e);
+
+event_status_t TIME_SET_entry(protimer_t *const mobj, event_t const *const e);
+event_status_t TIME_SET_incTime(protimer_t *const mobj, event_t const *const e);
+event_status_t TIME_SET_decTime(protimer_t *const mobj, event_t const *const e);
+event_status_t TIME_SET_exit(protimer_t *const mobj, event_t const *const e);
+event_status_t TIME_SET_startStop(protimer_t *const mobj, event_t const *const e);
+event_status_t TIME_SET_abort(protimer_t *const mobj, event_t const *const e);
+event_status_t COUNTDOWN_timeTick(protimer_t *const mobj, event_t const *const e);
+event_status_t COUNTDOWN_exit(protimer_t *const mobj, event_t const *const e);
+event_status_t COUNTDOWN_startStop(protimer_t *const mobj, event_t const *const e);
+event_status_t COUNTDOWN_abort(protimer_t *const mobj, event_t const *const e);
+
+event_status_t PAUSE_entry(protimer_t *const mobj, event_t const *const e);
+event_status_t PAUSE_incTime(protimer_t *const mobj, event_t const *const e);
+event_status_t PAUSE_decTime(protimer_t *const mobj, event_t const *const e);
+event_status_t PAUSE_exit(protimer_t *const mobj, event_t const *const e);
+event_status_t PAUSE_startStop(protimer_t *const mobj, event_t const *const e);
+event_status_t PAUSE_abort(protimer_t *const mobj, event_t const *const e);
+
+event_status_t STAT_entry(protimer_t *const mobj, event_t const *const e);
+event_status_t STAT_exit(protimer_t *const mobj, event_t const *const e);
+event_status_t STAT_timeTick(protimer_t *const mobj, event_t const *const e);
+
+
 #endif

@@ -27,254 +27,182 @@ void protimer_init(protimer_t *mobj)
     printf("protimer inti done \n");
 }
 
-event_status_t protimer_state_mechine(protimer_t * const mobj, event_t const * const e)
+event_status_t IDEL_entry(protimer_t *const mobj, event_t const *const e)
 {
-    switch (mobj->active_state)
+    disp_msg("SET TIME");
+    disp_time(0);
+    mobj->curr_time = 0;
+    mobj->elpsed_time = 0;
+    return EVENT_HANDLED;
+}
+event_status_t IDEL_incTime(protimer_t *const mobj, event_t const *const e)
+{
+    mobj->curr_time += 60;
+    mobj->active_state = TIME_SET;
+    return EVENT_TRANSITION;    
+}
+event_status_t IDEL_timeTick(protimer_t *const mobj, event_t const *const e)
+{
+    if( ((protimer_tick_event_t *)(e))->ss == 5)
     {
-        case IDLE:
-            return protimer_state_handler_IDLE(mobj, e);
-            break;
-        
-        case TIME_SET:
-            return protimer_state_handler_TIME_SET(mobj, e);
-            break;
-        
-        case COUNTDOWN:
-            return protimer_state_handler_COUNTDOWN(mobj, e);
-            break;
-        
-        case PAUSE:
-            return protimer_state_handler_PAUSE(mobj, e);
-            break;
-        
-        case STAT:
-            return protimer_state_handler_STAT(mobj, e);
-            break;
-        
-        default:
-            break;
+        do_beep();
+        return EVENT_HANDLED;
     }
-}
-
-static event_status_t protimer_state_handler_IDLE(protimer_t *const mobj, event_t const *const e)
-{
-
-    switch (e->sig)
-    {
-        case ENTRY:
-            disp_msg("SET TIME");
-            disp_time(0);
-            mobj->curr_time = 0;
-            mobj->elpsed_time = 0;
-            return EVENT_HANDLED;
-            break;
-
-        case INC_TIME:
-            mobj->curr_time += 60;
-            mobj->active_state = TIME_SET;
-            return EVENT_TRANSITION;
-            break;
-
-        case TIME_TICK:
-            if( ((protimer_tick_event_t *)(e))->ss == 5)
-            {
-                do_beep();
-                return EVENT_HANDLED;
-            }
-            return EVENT_IGNORED;
-            break;
-    
-        case EXIT:
-            disp_clr();
-            return EVENT_HANDLED;
-            break;
-
-        case START_STOP:
-            mobj->active_state = STAT;
-            return EVENT_TRANSITION;
-            break;
-    default:
-        break;
-    } // END of switch 
     return EVENT_IGNORED;
 }
-
-static event_status_t protimer_state_handler_TIME_SET(protimer_t *const mobj, event_t const *const e)
+event_status_t IDEL_exit(protimer_t *const mobj, event_t const *const e)
+{ 
+    disp_clr();
+    return EVENT_HANDLED;
+}
+event_status_t IDEL_startStop(protimer_t *const mobj, event_t const *const e)
 {
-    switch (e->sig)
-    {
-        case ENTRY:
-            disp_time(mobj->curr_time);
-            return EVENT_HANDLED;
-            break;
+    mobj->active_state = STAT;
+    return EVENT_TRANSITION;
 
-        case INC_TIME:
-            if(mobj->curr_time < (MAX_VAL - 60) )
-            {
-                mobj->curr_time += 60;
-                disp_time(mobj->curr_time);
-            }
-            return EVENT_HANDLED;
-            break;
-
-        case DEC_TIME:
-            if(mobj->curr_time >= 60)
-            {
-                mobj->curr_time -= 60;
-                disp_time(mobj->curr_time);
-            }
-            return EVENT_HANDLED;
-            break;
-            
-        case EXIT:
-            disp_clr();
-            return EVENT_HANDLED;
-            break;
-
-        case START_STOP:
-            if( mobj->curr_time >= 60)
-            {
-                mobj->active_state = COUNTDOWN;
-                return EVENT_TRANSITION;
-            }
-            return EVENT_IGNORED;
-            break;
-        
-        case ABORT:
-            mobj->active_state = IDLE;
-            return EVENT_TRANSITION;
-            break;
-        
-        default:
-            break;
-    } // END of switch 
-    return EVENT_IGNORED;
 }
 
-static event_status_t protimer_state_handler_COUNTDOWN(protimer_t *const mobj, event_t const *const e)
+event_status_t TIME_SET_entry(protimer_t *const mobj, event_t const *const e)
+{
+    disp_time(mobj->curr_time);
+    return EVENT_HANDLED;
+}
+event_status_t TIME_SET_incTime(protimer_t *const mobj, event_t const *const e)
+{
+   if(mobj->curr_time < (MAX_VAL - 60) )
+    {
+        mobj->curr_time += 60;
+        disp_time(mobj->curr_time);
+    }
+    return EVENT_HANDLED; 
+}
+event_status_t TIME_SET_decTime(protimer_t *const mobj, event_t const *const e)
+{
+   if(mobj->curr_time >= 60)
+    {
+        mobj->curr_time -= 60;
+        disp_time(mobj->curr_time);
+    }
+    return EVENT_HANDLED; 
+}
+event_status_t TIME_SET_exit(protimer_t *const mobj, event_t const *const e)
+{
+    disp_clr();
+    return EVENT_HANDLED; 
+}
+event_status_t TIME_SET_startStop(protimer_t *const mobj, event_t const *const e)
+{
+    if( mobj->curr_time >= 60)
+    {
+        mobj->active_state = COUNTDOWN;
+        return EVENT_TRANSITION;
+    }
+    return EVENT_IGNORED;
+}
+event_status_t TIME_SET_abort(protimer_t *const mobj, event_t const *const e)
+{
+    mobj->active_state = IDLE;
+    return EVENT_TRANSITION;
+}
+
+event_status_t COUNTDOWN_timeTick(protimer_t *const mobj, event_t const *const e)
 {
     static uint8_t tick_count = 0;
-    switch (e->sig)
+    if(++tick_count >= 10)
     {
-        
-        case TIME_TICK:
-            if(++tick_count >= 10)
-            {
-                tick_count = 0;
-                mobj->curr_time --;
-                mobj->elpsed_time ++;
-                disp_time(mobj->curr_time);
+        tick_count = 0;
+        mobj->curr_time --;
+        mobj->elpsed_time ++;
+        disp_time(mobj->curr_time);
 
-                if(0 == mobj->curr_time)
-                {
-                    mobj->active_state = IDLE;
-                    return EVENT_TRANSITION;
-                }
-                return EVENT_HANDLED;
-            }
-            return EVENT_IGNORED;
-            break;
-    
-        case EXIT:
-            mobj->pro_time = mobj->elpsed_time;
-            mobj->elpsed_time = 0;
-            return EVENT_HANDLED;
-            break;
-
-        case START_STOP:
-            mobj->active_state = PAUSE;
-            return EVENT_TRANSITION;
-            break;
-
-        case ABORT:
+        if(0 == mobj->curr_time)
+        {
             mobj->active_state = IDLE;
             return EVENT_TRANSITION;
-            break;
-    default:
-        break;
-    } // END of switch 
+        }
+        return EVENT_HANDLED;
+    }
     return EVENT_IGNORED;
 }
-
-static event_status_t protimer_state_handler_PAUSE(protimer_t *const mobj, event_t const *const e)
+event_status_t COUNTDOWN_exit(protimer_t *const mobj, event_t const *const e)
 {
-    switch (e->sig)
-    {
-        case ENTRY:
-            disp_msg("PAUSED\n");
-            return EVENT_HANDLED;
-            break;
-
-        case INC_TIME:
-            if(mobj->curr_time < (MAX_VAL - 60) )
-            {
-                mobj->curr_time += 60;
-                mobj->active_state = TIME_SET;
-                return EVENT_TRANSITION;
-            }
-            return EVENT_IGNORED;
-            break;
-
-        case DEC_TIME:
-            if(mobj->curr_time >= 60)
-            {
-                mobj->curr_time -= 60;
-                mobj->active_state = TIME_SET;
-                return EVENT_TRANSITION;
-            }
-            return EVENT_IGNORED;
-            break;
-            
-        case EXIT:
-            disp_clr();
-            return EVENT_HANDLED;
-            break;
-
-        case START_STOP:
-            mobj->active_state = COUNTDOWN;
-            return EVENT_TRANSITION;
-            break;
-        
-        case ABORT:
-            mobj->active_state = IDLE;
-            return EVENT_TRANSITION;
-            break;
-        
-        default:
-            break;
-    } // END of switch 
-    return EVENT_IGNORED;
+    mobj->pro_time = mobj->elpsed_time;
+    mobj->elpsed_time = 0;
+    return EVENT_HANDLED;
+}
+event_status_t COUNTDOWN_startStop(protimer_t *const mobj, event_t const *const e)
+{
+    mobj->active_state = PAUSE;
+    return EVENT_TRANSITION; 
+}
+event_status_t COUNTDOWN_abort(protimer_t *const mobj, event_t const *const e)
+{
+    mobj->active_state = IDLE;
+    return EVENT_TRANSITION;
 }
 
-static event_status_t protimer_state_handler_STAT(protimer_t *const mobj, event_t const *const e)
-{   
-    static uint8_t tick_count = 0;
-    switch (e->sig)
+event_status_t PAUSE_entry(protimer_t *const mobj, event_t const *const e)
+{
+
+    disp_msg("PAUSED\n");
+    return EVENT_HANDLED;
+}
+event_status_t PAUSE_incTime(protimer_t *const mobj, event_t const *const e)
+{
+    if(mobj->curr_time < (MAX_VAL - 60) )
     {
-        case ENTRY:
-            disp_msg("PRODUCTIVE TIME \t ");
-            disp_time(mobj->pro_time);
-            return EVENT_HANDLED;
-            break;
+        mobj->curr_time += 60;
+        mobj->active_state = TIME_SET;
+        return EVENT_TRANSITION;
+    }
+    return EVENT_IGNORED;  
+}
+event_status_t PAUSE_decTime(protimer_t *const mobj, event_t const *const e)
+{
+    if(mobj->curr_time >= 60)
+    {
+        mobj->curr_time -= 60;
+        mobj->active_state = TIME_SET;
+        return EVENT_TRANSITION;
+    }
+    return EVENT_IGNORED;
+}
+event_status_t PAUSE_exit(protimer_t *const mobj, event_t const *const e)
+{
+    disp_clr();
+    return EVENT_HANDLED;
+}
+event_status_t PAUSE_startStop(protimer_t *const mobj, event_t const *const e)
+{
+    mobj->active_state = COUNTDOWN;
+    return EVENT_TRANSITION;
+}
+event_status_t PAUSE_abort(protimer_t *const mobj, event_t const *const e)
+{
+    mobj->active_state = IDLE;
+    return EVENT_TRANSITION;
+}
 
-        case TIME_TICK:
-            if( ++tick_count >= 30)
-            {
-                tick_count = 0;
-                mobj->active_state = IDLE;
-                return EVENT_TRANSITION;
-            }
-            return EVENT_IGNORED;
-            break;
-    
-        case EXIT:
-            disp_clr();
-            return EVENT_HANDLED;
-            break;
-
-        default:
-            break;
-    } // END of switch 
+event_status_t STAT_entry(protimer_t *const mobj, event_t const *const e)
+{
+    disp_msg("PRODUCTIVE TIME \t ");
+    disp_time(mobj->pro_time);
+    return EVENT_HANDLED;
+}
+event_status_t STAT_exit(protimer_t *const mobj, event_t const *const e)
+{
+    disp_clr();
+    return EVENT_HANDLED;
+}
+event_status_t STAT_timeTick(protimer_t *const mobj, event_t const *const e)
+{
+    static uint8_t tick_count = 0;
+    if( ++tick_count >= 30)
+    {
+        tick_count = 0;
+        mobj->active_state = IDLE;
+        return EVENT_TRANSITION;
+    }
     return EVENT_IGNORED;
 }
 
